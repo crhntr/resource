@@ -7,30 +7,10 @@ import "os"
 // build variables in check calls.
 type Build struct{}
 
-func (Build) ID() (string, bool) {
-	return os.LookupEnv("BUILD_ID")
-}
-
-func (Build) Name() (string, bool) {
-	return os.LookupEnv("BUILD_NAME")
-}
-
-func (Build) JobName() (string, bool) {
-	return os.LookupEnv("BUILD_JOB_NAME")
-}
-
-func (Build) PipelineName() (string, bool) {
-	return os.LookupEnv("BUILD_PIPELINE_NAME")
-}
-
-func (Build) TeamName() (string, bool) {
-	return os.LookupEnv("BUILD_TEAM_NAME")
-}
-
-func (Build) CreatedBy() (string, bool) {
-	return os.LookupEnv("BUILD_CREATED_BY")
-}
-
-func (Build) ATCExternalURL() (string, bool) {
-	return os.LookupEnv("ATC_EXTERNAL_URL")
-}
+func (Build) ID() (string, bool)             { return os.LookupEnv("BUILD_ID") }
+func (Build) Name() (string, bool)           { return os.LookupEnv("BUILD_NAME") }
+func (Build) JobName() (string, bool)        { return os.LookupEnv("BUILD_JOB_NAME") }
+func (Build) PipelineName() (string, bool)   { return os.LookupEnv("BUILD_PIPELINE_NAME") }
+func (Build) TeamName() (string, bool)       { return os.LookupEnv("BUILD_TEAM_NAME") }
+func (Build) CreatedBy() (string, bool)      { return os.LookupEnv("BUILD_CREATED_BY") }
+func (Build) ATCExternalURL() (string, bool) { return os.LookupEnv("ATC_EXTERNAL_URL") }
