@@ -27,6 +27,12 @@ type (
 	checkFunc resource.Check[example.Resource, example.Version]
 )
 
+var (
+	_ getFunc   = new(fakes.Get).Spy
+	_ putFunc   = new(fakes.Put).Spy
+	_ checkFunc = new(fakes.Check).Spy
+)
+
 const (
 	checkStdin = `{
   "source": {
