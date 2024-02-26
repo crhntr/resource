@@ -28,9 +28,12 @@ type (
 )
 
 var (
-	_ getFunc   = new(fakes.Get).Spy
-	_ putFunc   = new(fakes.Put).Spy
-	_ checkFunc = new(fakes.Check).Spy
+	// these assignments are helpful to ensure fakes have the correct Spy signature.
+	// they also make the linter happier (the func types are flagged as unused by the linter even though they are used by counterfeiter)
+
+	_ getFunc   = fakes.Get{}.Spy
+	_ putFunc   = fakes.Put{}.Spy
+	_ checkFunc = fakes.Check{}.Spy
 )
 
 const (
