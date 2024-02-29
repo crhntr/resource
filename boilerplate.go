@@ -14,9 +14,9 @@ type MetadataField struct {
 }
 
 type (
-	Get[ResourceParams, GetParams, Version any] func(context.Context, ResourceParams, GetParams, Version, *log.Logger) ([]MetadataField, error)
-	Put[ResourceParams, PutParams, Version any] func(context.Context, ResourceParams, PutParams, *log.Logger) (Version, []MetadataField, error)
-	Check[ResourceParams, Version any]          func(context.Context, ResourceParams, Version, *log.Logger) ([]Version, error)
+	Get[ResourceParams, GetParams, Version any] func(context.Context, *log.Logger, ResourceParams, GetParams, Version, string) ([]MetadataField, error)
+	Put[ResourceParams, PutParams, Version any] func(context.Context, *log.Logger, ResourceParams, PutParams, string) (Version, []MetadataField, error)
+	Check[ResourceParams, Version any]          func(context.Context, *log.Logger, ResourceParams, Version) ([]Version, error)
 )
 
 // Run calls the given Get, Put, and Check functions based on the command name.
@@ -60,17 +60,17 @@ func RunWithCustomization[ResourceParams, GetParams, PutParams, Version any](
 		var err error
 		switch filepath.Base(args[0]) {
 		case "in":
-			err = handleJSON(ctx, customization, stdout, stderrLogger, stdin, in.run)
+			err = handleJSON(ctx, customization, stdout, stderrLogger, stdin, args[1:], in.run)
 		case "out":
-			err = handleJSON(ctx, customization, stdout, stderrLogger, stdin, out.run)
+			err = handleJSON(ctx, customization, stdout, stderrLogger, stdin, args[1:], out.run)
 		case "check":
-			err = handleJSON(ctx, customization, stdout, stderrLogger, stdin, check.run)
+			err = handleJSON(ctx, customization, stdout, stderrLogger, stdin, args[1:], check.run)
 		}
 		return err
 	}
 }
 
-func handleJSON[Req, Res any](ctx context.Context, bc Customization, stdout io.Writer, stderr *log.Logger, stdin io.Reader, run func(context.Context, Req, *log.Logger) (Res, error)) error {
+func handleJSON[Req, Res any](ctx context.Context, bc Customization, stdout io.Writer, log *log.Logger, stdin io.Reader, args []string, run func(context.Context, *log.Logger, Req, []string) (Res, error)) error {
 	var req Req
 	dec := json.NewDecoder(stdin)
 	if bc.DisallowUnknownFields {
@@ -80,7 +80,7 @@ func handleJSON[Req, Res any](ctx context.Context, bc Customization, stdout io.W
 	if err != nil {
 		return err
 	}
-	res, err := run(ctx, req, stderr)
+	res, err := run(ctx, log, req, args)
 	if err != nil {
 		return err
 	}
@@ -98,8 +98,8 @@ type inResponse[Version any] struct {
 	VersionMetadata []MetadataField `json:"metadata,omitempty"`
 }
 
-func (in Get[ResourceParams, GetParams, Version]) run(ctx context.Context, req inRequest[ResourceParams, GetParams, Version], log *log.Logger) (inResponse[Version], error) {
-	m, err := in(ctx, req.Source, req.Params, req.Version, log)
+func (in Get[ResourceParams, GetParams, Version]) run(ctx context.Context, log *log.Logger, req inRequest[ResourceParams, GetParams, Version], args []string) (inResponse[Version], error) {
+	m, err := in(ctx, log, req.Source, req.Params, req.Version, args[0])
 	return inResponse[Version]{Version: req.Version, VersionMetadata: m}, err
 }
 
@@ -113,8 +113,8 @@ type outResponse[Version any] struct {
 	VersionMetadata []MetadataField `json:"metadata"`
 }
 
-func (out Put[ResourceParams, PutParams, Version]) run(ctx context.Context, req outRequest[ResourceParams, PutParams, Version], log *log.Logger) (outResponse[Version], error) {
-	v, m, err := out(ctx, req.Source, req.Params, log)
+func (out Put[ResourceParams, PutParams, Version]) run(ctx context.Context, log *log.Logger, req outRequest[ResourceParams, PutParams, Version], args []string) (outResponse[Version], error) {
+	v, m, err := out(ctx, log, req.Source, req.Params, args[0])
 	return outResponse[Version]{Version: v, VersionMetadata: m}, err
 }
 
@@ -125,6 +125,6 @@ type checkRequest[ResourceParams, Version any] struct {
 
 type checkResponse[Version any] []Version
 
-func (fn Check[ResourceParams, Version]) run(ctx context.Context, req checkRequest[ResourceParams, Version], log *log.Logger) (checkResponse[Version], error) {
-	return fn(ctx, req.Source, req.Version, log)
+func (fn Check[ResourceParams, Version]) run(ctx context.Context, log *log.Logger, req checkRequest[ResourceParams, Version], _ []string) (checkResponse[Version], error) {
+	return fn(ctx, log, req.Source, req.Version)
 }

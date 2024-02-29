@@ -11,14 +11,15 @@ import (
 )
 
 type Get struct {
-	Stub        func(context.Context, example.Resource, example.GetParams, example.Version, *log.Logger) ([]resource.MetadataField, error)
+	Stub        func(context.Context, *log.Logger, example.Resource, example.GetParams, example.Version, string) ([]resource.MetadataField, error)
 	mutex       sync.RWMutex
 	argsForCall []struct {
 		arg1 context.Context
-		arg2 example.Resource
-		arg3 example.GetParams
-		arg4 example.Version
-		arg5 *log.Logger
+		arg2 *log.Logger
+		arg3 example.Resource
+		arg4 example.GetParams
+		arg5 example.Version
+		arg6 string
 	}
 	returns struct {
 		result1 []resource.MetadataField
@@ -32,22 +33,23 @@ type Get struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *Get) Spy(arg1 context.Context, arg2 example.Resource, arg3 example.GetParams, arg4 example.Version, arg5 *log.Logger) ([]resource.MetadataField, error) {
+func (fake *Get) Spy(arg1 context.Context, arg2 *log.Logger, arg3 example.Resource, arg4 example.GetParams, arg5 example.Version, arg6 string) ([]resource.MetadataField, error) {
 	fake.mutex.Lock()
 	ret, specificReturn := fake.returnsOnCall[len(fake.argsForCall)]
 	fake.argsForCall = append(fake.argsForCall, struct {
 		arg1 context.Context
-		arg2 example.Resource
-		arg3 example.GetParams
-		arg4 example.Version
-		arg5 *log.Logger
-	}{arg1, arg2, arg3, arg4, arg5})
+		arg2 *log.Logger
+		arg3 example.Resource
+		arg4 example.GetParams
+		arg5 example.Version
+		arg6 string
+	}{arg1, arg2, arg3, arg4, arg5, arg6})
 	stub := fake.Stub
 	returns := fake.returns
-	fake.recordInvocation("getFunc", []interface{}{arg1, arg2, arg3, arg4, arg5})
+	fake.recordInvocation("getFunc", []interface{}{arg1, arg2, arg3, arg4, arg5, arg6})
 	fake.mutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3, arg4, arg5)
+		return stub(arg1, arg2, arg3, arg4, arg5, arg6)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -61,16 +63,16 @@ func (fake *Get) CallCount() int {
 	return len(fake.argsForCall)
 }
 
-func (fake *Get) Calls(stub func(context.Context, example.Resource, example.GetParams, example.Version, *log.Logger) ([]resource.MetadataField, error)) {
+func (fake *Get) Calls(stub func(context.Context, *log.Logger, example.Resource, example.GetParams, example.Version, string) ([]resource.MetadataField, error)) {
 	fake.mutex.Lock()
 	defer fake.mutex.Unlock()
 	fake.Stub = stub
 }
 
-func (fake *Get) ArgsForCall(i int) (context.Context, example.Resource, example.GetParams, example.Version, *log.Logger) {
+func (fake *Get) ArgsForCall(i int) (context.Context, *log.Logger, example.Resource, example.GetParams, example.Version, string) {
 	fake.mutex.RLock()
 	defer fake.mutex.RUnlock()
-	return fake.argsForCall[i].arg1, fake.argsForCall[i].arg2, fake.argsForCall[i].arg3, fake.argsForCall[i].arg4, fake.argsForCall[i].arg5
+	return fake.argsForCall[i].arg1, fake.argsForCall[i].arg2, fake.argsForCall[i].arg3, fake.argsForCall[i].arg4, fake.argsForCall[i].arg5, fake.argsForCall[i].arg6
 }
 
 func (fake *Get) Returns(result1 []resource.MetadataField, result2 error) {

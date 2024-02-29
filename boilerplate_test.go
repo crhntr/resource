@@ -31,9 +31,9 @@ var (
 	// these assignments are helpful to ensure fakes have the correct Spy signature.
 	// they also make the linter happier (the func types are flagged as unused by the linter even though they are used by counterfeiter)
 
-	_ getFunc   = fakes.Get{}.Spy
-	_ putFunc   = fakes.Put{}.Spy
-	_ checkFunc = fakes.Check{}.Spy
+	_ getFunc   = new(fakes.Get).Spy
+	_ putFunc   = new(fakes.Put).Spy
+	_ checkFunc = new(fakes.Check).Spy
 )
 
 const (
@@ -96,7 +96,7 @@ func TestRun_check(t *testing.T) {
 		t.Fatalf("expected put not to be called, but it was called %d times", got)
 	}
 
-	_, resourceParamsArg, versionArg, _ := check.ArgsForCall(0)
+	_, _, resourceParamsArg, versionArg := check.ArgsForCall(0)
 
 	if exp := "develop"; resourceParamsArg.Branch != exp {
 		t.Errorf("expected %q got %q", exp, resourceParamsArg.Branch)
@@ -122,7 +122,7 @@ func TestRun_get(t *testing.T) {
 	stdin := bytes.NewBufferString(getStdin)
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
-	err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/in"})
+	err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/in", "some-dir"})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
@@ -138,7 +138,11 @@ func TestRun_get(t *testing.T) {
 		t.Fatalf("expected put not to be called, but it was called %d times", got)
 	}
 
-	_, resourceParamsArg, getParamArg, versionArg, _ := get.ArgsForCall(0)
+	_, _, resourceParamsArg, getParamArg, versionArg, resourcesDir := get.ArgsForCall(0)
+
+	if resourcesDir != "some-dir" {
+		t.Errorf("wrong resources dir")
+	}
 
 	if !getParamArg.IncludeZip {
 		t.Errorf("expected get param args to be parsed")
@@ -167,7 +171,7 @@ func TestRun_put(t *testing.T) {
 	stdin := bytes.NewBufferString(putStdin)
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
-	err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/out"})
+	err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/out", "some-dir"})
 
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
@@ -183,7 +187,11 @@ func TestRun_put(t *testing.T) {
 		t.Fatalf("expected put to be called once, but it was called %d times", got)
 	}
 
-	_, resourceParamsArg, getParamArg, _ := put.ArgsForCall(0)
+	_, _, resourceParamsArg, getParamArg, resourcesDir := put.ArgsForCall(0)
+
+	if resourcesDir != "some-dir" {
+		t.Errorf("wrong resources dir")
+	}
 
 	if !getParamArg.EnsureChecksum {
 		t.Errorf("expected get param args to be parsed")
@@ -209,7 +217,7 @@ func TestRun_failure_cases(t *testing.T) {
 		stdin := bytes.NewBufferString(putStdin)
 		stdout := errWriter{}
 		stderr := new(bytes.Buffer)
-		err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/out"})
+		err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/out", "some-dir"})
 
 		if exp := "write banana"; err == nil || !strings.Contains(err.Error(), exp) {
 			t.Fatalf("expected error containing %q got %s", exp, err)
@@ -228,7 +236,7 @@ func TestRun_failure_cases(t *testing.T) {
 		stdin := iotest.ErrReader(fmt.Errorf("read banana"))
 		stdout := new(bytes.Buffer)
 		stderr := new(bytes.Buffer)
-		err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/out"})
+		err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/out", "some-dir"})
 
 		if exp := "read banana"; err == nil || !strings.Contains(err.Error(), exp) {
 			t.Fatalf("expected error containing %q got %s", exp, err)
@@ -249,7 +257,7 @@ func TestRun_failure_cases(t *testing.T) {
 		stdin := strings.NewReader(getStdin)
 		stdout := new(bytes.Buffer)
 		stderr := new(bytes.Buffer)
-		err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/in"})
+		err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/in", "some-dir"})
 
 		if exp := "get banana"; err == nil || !strings.Contains(err.Error(), exp) {
 			t.Fatalf("expected error containing %q got %s", exp, err)
@@ -270,7 +278,7 @@ func TestRun_failure_cases(t *testing.T) {
 		stdin := strings.NewReader(putStdin)
 		stdout := new(bytes.Buffer)
 		stderr := new(bytes.Buffer)
-		err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/out"})
+		err := mux(stdout, stderr, stdin, []string{"/some/absolute-path/out", "some-dir"})
 
 		if exp := "put banana"; err == nil || !strings.Contains(err.Error(), exp) {
 			t.Fatalf("expected error containing %q got %s", exp, err)
@@ -317,7 +325,7 @@ func TestRun_Logger(t *testing.T) {
 	stderr := new(bytes.Buffer)
 	_ = mux(stdout, stderr, stdin, []string{"/some/absolute-path/check"})
 
-	_, _, _, logger := check.ArgsForCall(0)
+	_, logger, _, _ := check.ArgsForCall(0)
 
 	if logger.Flags() != log.Default().Flags() {
 		t.Errorf("expected default flags")
