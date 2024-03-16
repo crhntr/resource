@@ -9,14 +9,14 @@ import (
 	"testing/iotest"
 
 	"github.com/crhntr/resource"
-	"github.com/crhntr/resource/fakes"
 	"github.com/crhntr/resource/internal/example"
+	"github.com/crhntr/resource/internal/fakes"
 )
 
 //go:generate counterfeiter -generate
-//counterfeiter:generate -o ./fakes/get.go --fake-name Get . getFunc
-//counterfeiter:generate -o ./fakes/put.go --fake-name Put . putFunc
-//counterfeiter:generate -o ./fakes/check.go --fake-name Check . checkFunc
+//counterfeiter:generate -o ./internal/fakes/get.go --fake-name Get . getFunc
+//counterfeiter:generate -o ./internal/fakes/put.go --fake-name Put . putFunc
+//counterfeiter:generate -o ./internal/fakes/check.go --fake-name Check . checkFunc
 
 type (
 	// I need to put the config structures in another package "example" so counterfeiter can import them.
