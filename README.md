@@ -1,6 +1,6 @@
 # Concourse Resource Boilerplate  [![Go Reference](https://pkg.go.dev/badge/github.com/crhntr/resource.svg)](https://pkg.go.dev/github.com/crhntr/resource)
 
-A package to reduce boilerplate when writing custom Concourse Resources.
+A package to reduce boilerplate when writing [custom Concourse Resource Types](https://concourse-ci.org/implementing-resource-types.html).
 
 ## Start with this
 
