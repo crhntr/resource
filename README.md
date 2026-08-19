@@ -2,6 +2,8 @@
 
 A package to reduce boilerplate when writing [custom Concourse Resource Types](https://concourse-ci.org/implementing-resource-types.html).
 
+Instead of writing a Go program, see if you can do it in Bash (if not come back here): https://taydev.net/posts/bash-tips-for-concourse-resource-types/
+
 ## Start with this
 
 ```go
